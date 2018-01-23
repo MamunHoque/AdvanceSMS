@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "840c1fb06a2839e5594ae4aaf511faa4",
+    "content-hash": "9e4b28905ef2ce44955df923ebc9942d",
     "packages": [
         {
             "name": "arrilot/laravel-widgets",
@@ -1320,16 +1320,16 @@
         },
         {
             "name": "larapack/hooks",
-            "version": "v1.0.4",
+            "version": "v1.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/larapack/hooks.git",
-                "reference": "81601599b01b00ea669b097edf24d7bdfdf4f2cb"
+                "reference": "6da4b3de77b56b87d5b4a8be3ebbe10f6bc6538d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/larapack/hooks/zipball/81601599b01b00ea669b097edf24d7bdfdf4f2cb",
-                "reference": "81601599b01b00ea669b097edf24d7bdfdf4f2cb",
+                "url": "https://api.github.com/repos/larapack/hooks/zipball/6da4b3de77b56b87d5b4a8be3ebbe10f6bc6538d",
+                "reference": "6da4b3de77b56b87d5b4a8be3ebbe10f6bc6538d",
                 "shasum": ""
             },
             "require": {
@@ -1361,7 +1361,7 @@
                 "hooks",
                 "laravel"
             ],
-            "time": "2018-01-17T09:01:25+00:00"
+            "time": "2018-01-22T14:31:56+00:00"
         },
         {
             "name": "larapack/voyager-hooks",
