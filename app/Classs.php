@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Scopes\SchoolScope;
 use Illuminate\Database\Eloquent\Model;
 use TCG\Voyager\Traits\HasRelationships;
 
@@ -26,6 +27,13 @@ class Classs extends Model
     protected $fillable = [
         'name', 'school_id', 'teacher_id',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope(new SchoolScope);
+    }
 
 
 }

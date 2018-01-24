@@ -5,6 +5,7 @@ namespace App;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use TCG\Voyager\Traits\HasRelationships;
+use App\Scopes\SchoolScope;
 
 class User extends \TCG\Voyager\Models\User
 {
@@ -28,4 +29,25 @@ class User extends \TCG\Voyager\Models\User
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    /**
+     * Get the phone record associated with the user.
+     */
+    public function school()
+    {
+        return $this->hasOne('App\School');
+    }
+
+
+
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope(new SchoolScope);
+
+    }
+
+
 }
