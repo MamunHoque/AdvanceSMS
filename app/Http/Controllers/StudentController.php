@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Student;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,11 +14,14 @@ use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 use TCG\Voyager\Http\Controllers\Controller as BreadBaseController;
+use TCG\Voyager\Models\User;
+use Illuminate\Foundation\Auth\RegistersUsers;
 
 
 class StudentController extends BreadBaseController
 {
-    use BreadRelationshipParser;
+    use BreadRelationshipParser,
+        RegistersUsers;
     //***************************************
     //               ____
     //              |  _ \
@@ -234,8 +238,31 @@ class StudentController extends BreadBaseController
             return response()->json(['errors' => $val->messages()]);
         }
 
+        foreach ($dataType->editRows as $key => $row) {
+
+            if($row->field=='password') {
+                unset($dataType->editRows[$key]);
+            }
+        }
+
         if (!$request->ajax()) {
-            $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
+
+            $std = $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
+
+            $user = User::find($std->user_id);
+
+            if(!empty($request->input('name')))
+                $user->name = $request->input('name');
+
+            if(!empty($request->input('email')))
+                $user->email = $request->input('email');
+
+            if(!empty($request->input('password')))
+                $user->password = bcrypt($request->input('password'));
+
+            $user->avatar = $std->avatar;
+
+            $user->save();
 
             event(new BreadDataUpdated($dataType, $data));
 
@@ -318,7 +345,32 @@ class StudentController extends BreadBaseController
         }
 
         if (!$request->ajax()) {
-            $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
+
+            foreach ($dataType->addRows as $key => $row) {
+
+                if($row->field=='password') {
+                    unset($dataType->addRows[$key]);
+                }
+            }
+
+            $std = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
+
+            $data = $request->only('email','password','name');
+
+            $user = User::create([
+                'name'      => $std->name,
+                'email'     =>  $std->email,
+                'school_id' => $request->session()->get('school_id'),
+                'role_id'   => 4,
+                'avatar'    => $std->photo,
+                'password'  => bcrypt($data['password'])
+            ]);
+
+            $student = Student::find($std->id);
+
+
+            $student->update(['user_id' => $user->id]);
+
 
             event(new BreadDataAdded($dataType, $data));
 
@@ -354,21 +406,37 @@ class StudentController extends BreadBaseController
 
         // Init array of IDs
         $ids = [];
+        $userIds = [];
         if (empty($id)) {
             // Bulk delete, get IDs from POST
             $ids = explode(',', $request->ids);
         } else {
             // Single item delete, get ID from URL or Model Binding
             $ids[] = $id instanceof Model ? $id->{$id->getKeyName()} : $id;
+
         }
         foreach ($ids as $id) {
             $data = call_user_func([$dataType->model_name, 'findOrFail'], $id);
+
             $this->cleanup($dataType, $data);
         }
 
         $displayName = count($ids) > 1 ? $dataType->display_name_plural : $dataType->display_name_singular;
 
+        $users = [];
+
+        foreach ($ids as $student_id){
+            $student = Student::select('id','user_id')->where('id','=',$student_id)->first();
+
+            if(!empty($student)){
+                $users[] = $student->user_id;
+            }
+        }
+        //return $ids;
+
         $res = $data->destroy($ids);
+
+
         $data = $res
             ? [
                 'message'    => __('voyager.generic.successfully_deleted')." {$displayName}",
@@ -380,6 +448,9 @@ class StudentController extends BreadBaseController
             ];
 
         if ($res) {
+
+            User::destroy($users);
+
             event(new BreadDataDeleted($dataType, $data));
         }
 
